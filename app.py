@@ -1,107 +1,146 @@
-import requests
-from flask import Flask,  request,  make_response, abort
-from flask_cors import CORS
-import json
+import requests, json, re
+
+from flask import (
+    Flask,
+    request,
+    make_response,
+    abort,
+    send_from_directory,
+    render_template,
+)
+
 from bs4 import BeautifulSoup
 
+from urllib.parse import urlparse
+
+from datetime import datetime, time, timedelta
+
 app = Flask(__name__)
-CORS(app)
 
-def getCityFromUrl(url):
-    return url.split('/')[-1:][0].split('.')[0]
+WEATHER_MODELS = ["wrf-1h", "arome-1h", "arpege-1h", "iconeu", "icond2"]
 
-def generateUrls(prompt, urls):
-    id_city = prompt.split('/')[4]
-    city = getCityFromUrl(prompt)
-    algos = ['wrf-1h', 'arome-1h', 'arpege-1h', 'iconeu', 'icond2']
-    for algo in algos:
-        url = {}
-        url["code"] = algo.split('-')[0]
-        url["url"] = "https://www.meteociel.fr/previsions-" + algo + "/" + id_city + "/" + city+".htm"
-        urls.append(url)
-    return urls
 
-def read_rows(rows):
-    result = []
-    day = 0
+def get_timestamp_from_day(day):
+    # So, it's a bit tricky, we try to convert relative date information
+    # like "Mar18" into timestamps, it should be easier to graph.
+
+    # We get timestamp from yesterday (because I don't know what happen at midnight)
+    # And considere that all retrieve datas are after that point in time
+    # We add one day to this reference date until the timestamp day number match the number in "Mar18"
+    day_number = int(re.search(r"\d{0,2}$", day).group())
+    limit_iteration = 14
+    # yesterday
+    ref_timestamp = datetime.combine(datetime.today(), time.min) - timedelta(days=1)
+    timestamp_founded = False
+
+    for i in range(limit_iteration):
+        if ref_timestamp.day != day_number:
+            ref_timestamp = ref_timestamp + timedelta(days=1)
+        else:
+            timestamp_founded = True
+            break
+
+    if not timestamp_founded:
+        print("Warning: Unknown timestamp for {}".format(day))
+        # In doubt return today
+        ref_timestamp = datetime.combine(datetime.today(), time.min)
+
+    return ref_timestamp
+
+
+def get_timestamp_from_hours(ref_timestamp, delta):
+    hours, minutes = map(int, delta.split(":"))
+    point_timestamp = ref_timestamp + timedelta(hours=hours, minutes=minutes)
+    # Convert s to ms (js use ms)
+    return point_timestamp.timestamp() * 1000
+
+
+def convert_rows_to_datapoints(rows):
+    datapoints = []
+    ref_timestamp = None
+
     for row in rows:
-        if len(row('td')) == 11:
-            day = row('td')[0].text
-            info={}
-            info["day"] = day
-            info["time"] = row('td')[1].text
-            info["temp"] = row('td')[2].text
-            result.append(info)
-        if len(row('td')) == 10:
-            info={}
-            info["day"] = day
-            info["time"] = row('td')[0].text
-            info["temp"] = row('td')[1].text
-            result.append(info)
-    return result
+        if len(row("td")) == 11:
+            # Retrieve
+            ref_timestamp = get_timestamp_from_day(row("td")[0].text)
+            point = {
+                "x": get_timestamp_from_hours(ref_timestamp, row("td")[1].text),
+                "y": row("td")[2].text.split(" ")[0],
+            }
+            datapoints.append(point)
+        elif len(row("td")) == 10:
+            if ref_timestamp == None:
+                print("Warning: unknown day, using today.")
+                ref_timestamp = datetime.combine(datetime.today(), time.min)
+            point = {
+                "x": get_timestamp_from_hours(ref_timestamp, row("td")[0].text),
+                "y": row("td")[1].text.split(" ")[0],
+            }
+            datapoints.append(point)
+    return datapoints
+
 
 @app.route("/")
 def home():
-    return "hi"
+    return render_template("index.html")
 
-@app.route("/test", methods=['GET', 'POST'])
-def test():
-    if request.method == 'GET':
-        d = {"res":"GET works"}
-        r = make_response(json.dumps(d))
-        r.headers['Content-Type'] = "application/json"
-        return r
-    if request.method == 'POST' :
-        d = request.get_json()
-        response = make_response(json.dumps(d))
-        response.headers['Content-Type'] = "application/json"
-        response.headers['Access-Control-Allow-Origin'] = "*"
-        response.headers['Content-Security-Policy'] = "localhost"
-        return response
 
-@app.route('/me', methods=['GET', 'POST'])
-def login():
-    urls = []
-    city = ""
-    if request.method == 'GET':
-        return "Nope"
-    if request.method == 'POST':
-        response = []
-        base = request.get_json()['base']
-        generateUrls(base, urls)
-        
-        for url in urls:
-            u = url.get('url')
-            name = url.get('code')
-            try:
-                req = requests.get(u, 'html.parser')
-            except:
-                abort(501)
-            parsed_html = BeautifulSoup(req.text, features="html.parser")
-            table = parsed_html.body('table')[6]
-            rows = table('tr')
-            data = {}
-            data["set"] = read_rows(rows)
-            data["debug"] = rows
-            data["algo"] = name
-            #data["city"] = getCityFromUrl(u)
-            #json.dumps(data, indent=2))
-            response.append(data)
+@app.route("/weather_datas", methods=["POST"])
+def get_weather_prediction():
+    mc_url = urlparse(request.get_json()["base"])
+    mc_city_code, mc_city_name = mc_url.path.split(".")[0].split("/")[2:]
 
-        #return response
-        data = {}
-        data["city"] = getCityFromUrl(u)
-        data["data"] = response
-        resp = make_response(json.dumps(data, indent=2))
-        resp.headers['Content-Type'] = "application/json"
-        resp.headers['Access-Control-Allow-Origin'] = "*"
-        resp.headers['Content-Security-Policy'] = "localhost"
-        return resp
+    data = {"city": mc_city_name, "data": {}}
+
+    for weather_model in WEATHER_MODELS:
+        model_name = weather_model.split("-")[0]
+        model_url = (
+            "https://www.meteociel.fr/previsions-"
+            + weather_model
+            + "/"
+            + mc_city_code
+            + "/"
+            + mc_city_name
+            + ".htm"
+        )
+
+        # Try retrieving models datas
+        try:
+            req = requests.get(model_url, "html.parser")
+        except:
+            # Could add something to skip the weather model that have an issue
+            abort(501)
+
+        # Parsing html
+        parsed_html = BeautifulSoup(req.text, features="html.parser")
+        table = parsed_html.body("table")[6]
+        rows = table("tr")
+
+        # Formating datas
+        data["data"][model_name] = convert_rows_to_datapoints(rows)
+
+    # return response
+    resp = make_response(json.dumps(data, indent=2))
+    resp.headers["Content-Type"] = "application/json"
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Content-Security-Policy"] = "localhost"
+    return resp
+
+
+@app.route("/statics/<path:name>")
+def serv_static(name):
+    return send_from_directory("statics", name)
+
+
+@app.route("/favicon.ico")
+def serv_favico():
+    abort(404)
 
 
 @app.errorhandler(404)
 def not_found(error):
     abort(404)
-    
+
+
 if __name__ == "__main__":
-    app.run(host='localhost', debug = True, port = 8080)
+    app.run(host="localhost", debug=True, port=8080)

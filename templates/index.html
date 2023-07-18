@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Meteo</title>
+	<script src="{{url_for('static', filename='js/chart.js')}}"></script>
+	<script src="{{url_for('static', filename='js/chartjs-adapter-date-fns.bundle.min.js')}}"></script>
+	<link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+
+<body>
+	<h2 id="city">[city]</h2>
+	<p>
+		Rendez-vous sur <a href="https://www.meteociel.fr/prevville.php">meteociel</a> pour que vous recherchiez votre
+		ville. <br>
+		Une fois sélectionnée, copiez le lien et mettez-le dans le formulaire
+	</p>
+	<div class="form">
+		<input type="text" id="link" placeholder="https://www.meteociel.fr/previsions-arome-1h/10979/toulouse.htm">
+		<button onclick="postJsonData()" type="button">Fetch</button>
+	</div>
+	<div class="error hide">
+		Erreur lors de la récupération des données
+	</div>
+	<p>
+		En cliquant sur la légende, vous pouvez faire disparaitre/apparaitre les données pour une meilleure lisibilité
+		ou comparaison
+	</p>
+
+	<div class="container">
+		<div class="lds-dual-ring"></div>
+	</div>
+	<canvas id="myChart">[graph]</canvas>
+
+	<script src="{{url_for('static', filename='js/meteo.js')}}"></script>
+	<footer>
+		<small>
+			En développement... des bugs sont à prévoir.
+		</small>
+	</footer>
+</body>
+
+</html>

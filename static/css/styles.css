@@ -1,0 +1,72 @@
+#myChart {
+    max-height: 70vh;
+    max-width: 100vw;
+}
+
+#city::first-letter {
+    text-transform: capitalize;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form input {
+    width: 400px;
+}
+
+.form button {
+    /* width: 20%; */
+    margin: 5px;
+}
+
+.error {
+    border: 1px solid red
+}
+
+.hide {
+    display: none;
+}
+
+.show {
+    display: block;
+}
+
+footer {
+    text-align: center;
+}
+
+.container {
+    display: none;
+    justify-content: center;
+}
+
+.lds-dual-ring {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}
+
+.lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border-radius: 50%;
+    border: 6px solid #000000;
+    border-color: #000000 transparent #000000 transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+}
+
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
