@@ -12,7 +12,6 @@
         - `meteo.domain.tld` should be replace by a dedicated subdomain
         - `/app/previsionnasse/.venv` should be replace by the path of your venv.
         - Each occurence of `/app/previsionnasse` should be replace by the path of the project.
-    - in `wsgi.py` : `/app/previsionnasse` should be replace by the path of the project.
 - copy the example file `apache/vhost.conf` into your apache sites folder.
 - restart apache
 
