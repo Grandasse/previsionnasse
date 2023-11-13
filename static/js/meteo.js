@@ -53,20 +53,58 @@ function build(datas) {
                     }
                 },
                 x: {
-                    type: 'time',
+                    type: 'timeseries',
                     time: {
                         unit: 'hour',
-                        displayFormats: {
-                            hour: 'yyyy-MM-dd HH:00'
-                        },
                         tooltipFormat: 'yyyy-MM-dd HH:mm',
                     },
                     title: {
                         display: true,
                         text: 'Date'
                     },
+                    // Need to have the first day in x axis 
+                    ticks: {
+                        source: 'data',
+                        maxRotation: 0,
+                        autoSkip: false,
+                        callback: function (value, index, values) {
+                            var date = new Date(value);
+                            var date_string = [];
+
+                            var date_hour = date.toLocaleTimeString([], { hour: "numeric" });
+                            var date_day = date.toLocaleDateString('fr-FR', { weekday: 'long', day: "numeric", month: "numeric" })
+
+                            // add vertical seperator for new day
+                            if (date.getHours() === 0) {
+                                date_string.push('|');
+                                date_string.push('|');
+                            }
+                            // add the hour every 4 hours
+                            else if (date.getHours() % 4 === 0) {
+                                date_string.push(date_hour);
+                            }
+                            // Else add a new line
+                            else {
+                                date_string.push('\n');
+                            }
+                            // Add decoration for every hour except the first
+                            if (date.getHours() !== 0) {
+                                date_string.push('_');
+                            }
+                            // add the date in the middle of the day
+                            if (date.getHours() === 12) {
+                                date_string.push('\n');
+                                date_string.push(date_day);
+                            }
+                            return date_string;
+                        }
+                    },
                 },
-            }
+            },
+            // show all values in tooltip
+            interaction: {
+                mode: 'x'
+            },
         }
     });
 }
