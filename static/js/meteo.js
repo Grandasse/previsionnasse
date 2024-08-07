@@ -53,7 +53,7 @@ function build(datas) {
                 {
                     type: 'bar',
                     label: 'arome-pluie',
-                    data: datas['arome'],
+                    data: datas['arome'].map(d => d.pluie),
                     backgroundColor: ['rgba(255, 99, 132, 0.2)'],
                     borderColor: ['rgba(255, 99, 132, 1)'],
                     borderWidth: 1,
@@ -62,7 +62,7 @@ function build(datas) {
                 {
                     type: 'bar',
                     label: 'arpege-pluie',
-                    data: datas['arpege'],
+                    data: datas['arpege'].map(d => d.pluie),
                     backgroundColor: ['rgba(54, 162, 235, 0.2)'],
                     borderColor: ['rgba(54, 162, 235, 1)'],
                     borderWidth: 1,
@@ -71,7 +71,7 @@ function build(datas) {
                 {
                     type: 'bar',
                     label: "wrf-pluie",
-                    data: datas['wrf'],
+                    data: datas['wrf'].map(d => d.pluie),
                     backgroundColor: ['rgba(255, 206, 86, 0.2)'],
                     borderColor: ['rgba(255, 206, 86, 1)'],
                     borderWidth: 1,
@@ -80,7 +80,7 @@ function build(datas) {
                 {
                     type: 'bar',
                     label: "icon-eu-pluie",
-                    data: datas['iconeu'],
+                    data: datas['iconeu'].map(d => d.pluie),
                     backgroundColor: ['rgba(75, 192, 192, 0.2)'],
                     borderColor: ['rgba(75, 192, 192, 1)'],
                     borderWidth: 1,
@@ -89,7 +89,7 @@ function build(datas) {
                 {
                     type: 'bar',
                     label: "icon-d2-pluie",
-                    data: datas['icond2'],
+                    data: datas['icond2'].map(d => d.pluie),
                     backgroundColor: ['rgba(153, 102, 255, 0.2)'],
                     borderColor: ['rgba(153, 102, 255, 1)'],
                     borderWidth: 1,
@@ -110,11 +110,11 @@ function build(datas) {
                     beginAtZero: false,
                     title: {
                         text: 'Précipitations (mm)',
-                        display: false,
+                        display: true,
                     },
                     position: 'right',
-                    suggestedMax:10,
-                    suggestedMin:0,
+                    suggestedMax: 10,
+                    suggestedMin: 0,
                 },
                 x: {
                     type: 'timeseries',
