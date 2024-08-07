@@ -2,44 +2,98 @@ function build(datas) {
     document.querySelector('#city').innerHTML = city
     const ctx = document.getElementById('myChart').getContext('2d');
     myChart = new Chart(ctx, {
-        type: 'line',
         data: {
             label: 'Temperature',
             datasets: [
                 {
+                    type: 'line',
                     label: 'AROME',
                     data: datas['arome'],
                     backgroundColor: ['rgba(255, 99, 132, 0.2)'],
                     borderColor: ['rgba(255, 99, 132, 1)'],
-                    borderWidth: 1
+                    borderWidth: 1,
+                    yAxisID: "y",
                 },
                 {
+                    type: 'line',
                     label: 'ARPEGE',
                     data: datas['arpege'],
                     backgroundColor: ['rgba(54, 162, 235, 0.2)'],
                     borderColor: ['rgba(54, 162, 235, 1)'],
-                    borderWidth: 1
+                    borderWidth: 1,
+                    yAxisID: "y",
                 },
                 {
+                    type: 'line',
                     label: "WRF",
                     data: datas['wrf'],
                     backgroundColor: ['rgba(255, 206, 86, 0.2)'],
                     borderColor: ['rgba(255, 206, 86, 1)'],
-                    borderWidth: 1
+                    borderWidth: 1,
+                    yAxisID: "y",
                 },
                 {
+                    type: 'line',
                     label: "ICON-EU",
                     data: datas['iconeu'],
                     backgroundColor: ['rgba(75, 192, 192, 0.2)'],
                     borderColor: ['rgba(75, 192, 192, 1)'],
-                    borderWidth: 1
+                    borderWidth: 1,
+                    yAxisID: "y",
                 },
                 {
+                    type: 'line',
                     label: "ICON-D2",
                     data: datas['icond2'],
                     backgroundColor: ['rgba(153, 102, 255, 0.2)'],
                     borderColor: ['rgba(153, 102, 255, 1)'],
-                    borderWidth: 1
+                    borderWidth: 1,
+                    yAxisID: "y",
+                },
+                {
+                    type: 'bar',
+                    label: 'arome-pluie',
+                    data: datas['arome'],
+                    backgroundColor: ['rgba(255, 99, 132, 0.2)'],
+                    borderColor: ['rgba(255, 99, 132, 1)'],
+                    borderWidth: 1,
+                    yAxisID: "y1",
+                },
+                {
+                    type: 'bar',
+                    label: 'arpege-pluie',
+                    data: datas['arpege'],
+                    backgroundColor: ['rgba(54, 162, 235, 0.2)'],
+                    borderColor: ['rgba(54, 162, 235, 1)'],
+                    borderWidth: 1,
+                    yAxisID: "y1",
+                },
+                {
+                    type: 'bar',
+                    label: "wrf-pluie",
+                    data: datas['wrf'],
+                    backgroundColor: ['rgba(255, 206, 86, 0.2)'],
+                    borderColor: ['rgba(255, 206, 86, 1)'],
+                    borderWidth: 1,
+                    yAxisID: "y1",
+                },
+                {
+                    type: 'bar',
+                    label: "icon-eu-pluie",
+                    data: datas['iconeu'],
+                    backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+                    borderColor: ['rgba(75, 192, 192, 1)'],
+                    borderWidth: 1,
+                    yAxisID: "y1",
+                },
+                {
+                    type: 'bar',
+                    label: "icon-d2-pluie",
+                    data: datas['icond2'],
+                    backgroundColor: ['rgba(153, 102, 255, 0.2)'],
+                    borderColor: ['rgba(153, 102, 255, 1)'],
+                    borderWidth: 1,
+                    yAxisID: "y1",
                 }
             ]
         },
@@ -51,6 +105,16 @@ function build(datas) {
                         display: true,
                         text: 'Température (°c)'
                     }
+                },
+                y1: {
+                    beginAtZero: false,
+                    title: {
+                        text: 'Précipitations (mm)',
+                        display: false,
+                    },
+                    position: 'right',
+                    suggestedMax:10,
+                    suggestedMin:0,
                 },
                 x: {
                     type: 'timeseries',

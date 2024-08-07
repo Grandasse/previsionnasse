@@ -63,18 +63,30 @@ def convert_rows_to_datapoints(rows):
         if len(row("td")) == 11:
             # Retrieve
             ref_timestamp = get_timestamp_from_day(row("td")[0].text)
+            timestamp = get_timestamp_from_hours(ref_timestamp, row("td")[1].text)
+            pluie = row("td")[7].text.split(" ")[0]
             point = {
-                "x": get_timestamp_from_hours(ref_timestamp, row("td")[1].text),
+                "x": timestamp,
                 "y": row("td")[2].text.split(" ")[0],
+                "pluie": {
+                    "x": timestamp,
+                    "y": "" if pluie == "--" else pluie,
+                },
             }
             datapoints.append(point)
         elif len(row("td")) == 10:
             if ref_timestamp == None:
                 print("Warning: unknown day, using today.")
                 ref_timestamp = datetime.combine(datetime.today(), time.min)
+            timestamp = get_timestamp_from_hours(ref_timestamp, row("td")[0].text)
+            pluie = row("td")[6].text.split(" ")[0]
             point = {
-                "x": get_timestamp_from_hours(ref_timestamp, row("td")[0].text),
+                "x": timestamp,
                 "y": row("td")[1].text.split(" ")[0],
+                "pluie": {
+                    "x": timestamp,
+                    "y": "" if pluie == "--" else pluie,
+                },
             }
             datapoints.append(point)
     return datapoints
